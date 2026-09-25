@@ -1,0 +1,119 @@
+version: '3.8'
+
+services:
+  # ==========================================================
+  # Database Service (MySQL 8)
+  # ==========================================================
+  mysql:
+    image: mysql:8.0
+    container_name: learnify-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-Root@123}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./docker/mysql-init:/docker-entrypoint-initdb.d
+    networks:
+      - learnify-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_PASSWORD:-Root@123}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ==========================================================
+  # Service Discovery Registry (Netflix Eureka)
+  # ==========================================================
+  server-registry:
+    build:
+      context: ./server-registry
+      dockerfile: Dockerfile
+    container_name: learnify-registry
+    restart: unless-stopped
+    ports:
+      - "8761:8761"
+    environment:
+      - PORT=8761
+      - EUREKA_HOSTNAME=server-registry
+    networks:
+      - learnify-network
+
+  # ==========================================================
+  # API Gateway
+  # ==========================================================
+  api-gateway:
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile
+    container_name: learnify-gateway
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=8080
+      - EUREKA_SERVER_URL=http://server-registry:8761/eureka
+      - JWT_SECRET=${JWT_SECRET:-fadklfdrerieriovnmvncmmbberhkhgfkhkfhghdfghdfreriogflhjfk}
+    depends_on:
+      - server-registry
+    networks:
+      - learnify-network
+
+  # ==========================================================
+  # User Service (Auth, Registration, JWT)
+  # ==========================================================
+  user-service:
+    build:
+      context: ./user-service
+      dockerfile: Dockerfile
+    container_name: learnify-user-service
+    restart: unless-stopped
+    ports:
+      - "8081:8081"
+    environment:
+      - PORT=8081
+      - DB_URL=jdbc:mysql://mysql:3306/newusermicroservicedb?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
+      - DB_USERNAME=${DB_USERNAME:-root}
+      - DB_PASSWORD=${DB_PASSWORD:-Root@123}
+      - EUREKA_SERVER_URL=http://server-registry:8761/eureka
+      - JWT_SECRET=${JWT_SECRET:-fadklfdrerieriovnmvncmmbberhkhgfkhkfhghdfghdfreriogflhjfk}
+    depends_on:
+      mysql:
+        condition: service_healthy
+      server-registry:
+        condition: service_started
+    networks:
+      - learnify-network
+
+  # ==========================================================
+  # Category Service (Category CRUD)
+  # ==========================================================
+  category-service:
+    build:
+      context: ./category-service
+      dockerfile: Dockerfile
+    container_name: learnify-category-service
+    restart: unless-stopped
+    ports:
+      - "8082:8082"
+    environment:
+      - PORT=8082
+      - DB_URL=jdbc:mysql://mysql:3306/newcategorymicroservicedb?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
+      - DB_USERNAME=${DB_USERNAME:-root}
+      - DB_PASSWORD=${DB_PASSWORD:-Root@123}
+      - EUREKA_SERVER_URL=http://server-registry:8761/eureka
+    depends_on:
+      mysql:
+        condition: service_healthy
+      server-registry:
+        condition: service_started
+    networks:
+      - learnify-network
+
+networks:
+  learnify-network:
+    driver: bridge
+
+volumes:
+  mysql_data:
