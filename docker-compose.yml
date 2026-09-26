@@ -111,6 +111,31 @@ services:
     networks:
       - learnify-network
 
+  # ==========================================================
+  # Purchase Service (Checkout, Payment Gateway, Orders)
+  # ==========================================================
+  purchase-service:
+    build:
+      context: ./purchase-service
+      dockerfile: Dockerfile
+    container_name: learnify-purchase-service
+    restart: unless-stopped
+    ports:
+      - "8085:8085"
+    environment:
+      - PORT=8085
+      - DB_URL=jdbc:mysql://mysql:3306/newpurchasemicroservicedb?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
+      - DB_USERNAME=${DB_USERNAME:-root}
+      - DB_PASSWORD=${DB_PASSWORD:-Root@123}
+      - EUREKA_SERVER_URL=http://server-registry:8761/eureka
+    depends_on:
+      mysql:
+        condition: service_healthy
+      server-registry:
+        condition: service_started
+    networks:
+      - learnify-network
+
 networks:
   learnify-network:
     driver: bridge

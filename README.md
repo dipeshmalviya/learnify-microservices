@@ -163,6 +163,37 @@ curl -X GET http://localhost:8080/categories \
   -H "Authorization: Bearer <YOUR_JWT_TOKEN>"
 ```
 
+### 5. Initiate Purchase Checkout (Payment Gateway)
+```bash
+curl -X POST http://localhost:8080/purchases/checkout \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <YOUR_JWT_TOKEN>" \
+  -d '{
+    "courseId": 101,
+    "amount": 49.99,
+    "currency": "USD",
+    "paymentMethod": "DUMMY_GATEWAY"
+  }'
+```
+
+### 6. Verify Payment & Unlock Course
+```bash
+curl -X POST http://localhost:8080/purchases/verify \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <YOUR_JWT_TOKEN>" \
+  -d '{
+    "orderId": 1,
+    "transactionId": "TXN_MOCK_XXXXX",
+    "simulateStatus": "SUCCESS"
+  }'
+```
+
+### 7. View User Purchases
+```bash
+curl -X GET http://localhost:8080/purchases/my-purchases \
+  -H "Authorization: Bearer <YOUR_JWT_TOKEN>"
+```
+
 ---
 
 ## 📄 License
