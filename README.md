@@ -102,23 +102,25 @@ You can deploy this microservices ecosystem for **100% FREE** using modern cloud
 
 ### Step 1: Free Cloud Database (TiDB Cloud MySQL)
 1. Go to [TiDB Cloud](https://tidbcloud.com/) and create a free Serverless MySQL cluster (No credit card required).
-2. Create databases:
+2. Open the SQL Editor and run:
    ```sql
-   CREATE DATABASE newusermicroservicedb;
-   CREATE DATABASE newcategorymicroservicedb;
+   CREATE DATABASE IF NOT EXISTS newusermicroservicedb;
+   CREATE DATABASE IF NOT EXISTS newcategorymicroservicedb;
+   CREATE DATABASE IF NOT EXISTS newpurchasemicroservicedb;
    ```
-3. Copy your Connection URL, Username, and Password.
+3. Copy your Host, Port, Username, and Password.
 
-### Step 2: Deploying to Free PaaS (Render / Koyeb / Railway)
-1. Push this repository to GitHub.
-2. In Render or Koyeb, deploy the services:
-   - **User Service**: Set build to Dockerfile (`./user-service/Dockerfile`). Set environment variables:
-     - `DB_URL`: `jdbc:mysql://<tidb-host>:4000/newusermicroservicedb?sslMode=VERIFY_IDENTITY`
-     - `DB_USERNAME`: `<your-tidb-username>`
-     - `DB_PASSWORD`: `<your-tidb-password>`
-     - `JWT_SECRET`: `<your-secure-random-key>`
-   - **Category Service**: Set build to Dockerfile (`./category-service/Dockerfile`) with corresponding TiDB credentials.
-   - **API Gateway**: Connects directly or via service discovery.
+### Step 2: Deploy to Render with 1-Click Blueprint
+1. Go to [Render Dashboard](https://dashboard.render.com/).
+2. Click **New +** -> **Blueprint**.
+3. Connect your GitHub repository `dipeshmalviya/learnify-microservices`.
+4. Render will automatically detect [`render.yaml`](file:///c:/Users/malvi/IdeaProjects/Learnify-Microservices-New/render.yaml) and configure:
+   - `learnify-user-service`
+   - `learnify-category-service`
+   - `learnify-purchase-service`
+   - `learnify-api-gateway`
+5. Supply your TiDB `DB_URL`, `DB_USERNAME`, and `DB_PASSWORD` when prompted.
+6. Click **Apply** to deploy the microservices ecosystem for free!
 
 ---
 

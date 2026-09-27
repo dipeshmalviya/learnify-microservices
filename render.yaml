@@ -1,0 +1,100 @@
+services:
+  # ==========================================================
+  # User Service (Auth, Registration, JWT)
+  # ==========================================================
+  - type: web
+    name: learnify-user-service
+    runtime: docker
+    dockerfilePath: ./user-service/Dockerfile
+    dockerContext: ./user-service
+    plan: free
+    envVars:
+      - key: PORT
+        value: 8081
+      - key: EUREKA_ENABLED
+        value: false
+      - key: DB_URL
+        sync: false
+      - key: DB_USERNAME
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+
+  # ==========================================================
+  # Category Service (Category CRUD)
+  # ==========================================================
+  - type: web
+    name: learnify-category-service
+    runtime: docker
+    dockerfilePath: ./category-service/Dockerfile
+    dockerContext: ./category-service
+    plan: free
+    envVars:
+      - key: PORT
+        value: 8082
+      - key: EUREKA_ENABLED
+        value: false
+      - key: DB_URL
+        sync: false
+      - key: DB_USERNAME
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+
+  # ==========================================================
+  # Purchase Service (Checkout & Dummy Payment Gateway)
+  # ==========================================================
+  - type: web
+    name: learnify-purchase-service
+    runtime: docker
+    dockerfilePath: ./purchase-service/Dockerfile
+    dockerContext: ./purchase-service
+    plan: free
+    envVars:
+      - key: PORT
+        value: 8085
+      - key: EUREKA_ENABLED
+        value: false
+      - key: DB_URL
+        sync: false
+      - key: DB_USERNAME
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+
+  # ==========================================================
+  # API Gateway (Unified Entry Point & Routing)
+  # ==========================================================
+  - type: web
+    name: learnify-api-gateway
+    runtime: docker
+    dockerfilePath: ./api-gateway/Dockerfile
+    dockerContext: ./api-gateway
+    plan: free
+    envVars:
+      - key: PORT
+        value: 8080
+      - key: EUREKA_ENABLED
+        value: false
+      - key: USER_SERVICE_URL
+        fromService:
+          type: web
+          name: learnify-user-service
+          property: host
+      - key: CATEGORY_SERVICE_URL
+        fromService:
+          type: web
+          name: learnify-category-service
+          property: host
+      - key: PURCHASE_SERVICE_URL
+        fromService:
+          type: web
+          name: learnify-purchase-service
+          property: host
+      - key: JWT_SECRET
+        fromService:
+          type: web
+          name: learnify-user-service
+          envVarKey: JWT_SECRET
