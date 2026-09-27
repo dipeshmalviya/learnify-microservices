@@ -33,7 +33,7 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
         ServerHttpRequest request = exchange.getRequest();
         String path = request.getURI().getPath();
 
-        if (path.startsWith("/auth")) {
+        if (path.equals("/") || path.equals("/health") || path.startsWith("/auth")) {
             return chain.filter(exchange);
         }
 
