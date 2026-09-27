@@ -1,0 +1,1012 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Learnify Cloud - Microservices Control Center</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #090d16;
+      --bg-card: rgba(18, 24, 38, 0.7);
+      --bg-card-hover: rgba(28, 38, 58, 0.85);
+      --border: rgba(255, 255, 255, 0.08);
+      --border-accent: rgba(99, 102, 241, 0.3);
+      --primary: #6366f1;
+      --primary-gradient: linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%);
+      --accent: #06b6d4;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --font: 'Outfit', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      background-image: 
+        radial-gradient(circle at 15% 15%, rgba(99, 102, 241, 0.15) 0%, transparent 40%),
+        radial-gradient(circle at 85% 75%, rgba(236, 72, 153, 0.12) 0%, transparent 40%),
+        radial-gradient(circle at 50% 50%, rgba(6, 182, 212, 0.08) 0%, transparent 60%);
+      color: var(--text);
+      font-family: var(--font);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Header */
+    header {
+      background: rgba(9, 13, 22, 0.85);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .logo-group {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+    }
+    .logo-badge {
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      background: var(--primary-gradient);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+      font-weight: 800;
+      box-shadow: 0 0 24px rgba(99, 102, 241, 0.5);
+    }
+    .logo-title {
+      font-size: 1.35rem;
+      font-weight: 700;
+      background: linear-gradient(to right, #ffffff, #94a3b8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      color: #34d399;
+      font-size: 0.85rem;
+      padding: 0.4rem 0.9rem;
+      border-radius: 999px;
+      font-weight: 600;
+    }
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      background: #10b981;
+      border-radius: 50%;
+      box-shadow: 0 0 10px #10b981;
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(1.2); }
+    }
+
+    .user-pill {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border);
+      padding: 0.4rem 0.9rem;
+      border-radius: 999px;
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .role-badge {
+      background: var(--primary);
+      padding: 0.15rem 0.5rem;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    /* Container */
+    .container {
+      max-width: 1300px;
+      margin: 2rem auto;
+      padding: 0 1.5rem;
+    }
+
+    /* Service Grid Top Summary */
+    .services-bar {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    .service-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1rem;
+      transition: all 0.3s;
+      position: relative;
+      overflow: hidden;
+    }
+    .service-card:hover {
+      border-color: var(--border-accent);
+      transform: translateY(-2px);
+    }
+    .service-card::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: var(--primary-gradient);
+    }
+    .service-name {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 0.3rem;
+    }
+    .service-port {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: var(--accent);
+    }
+    .service-status {
+      font-size: 0.8rem;
+      color: #34d399;
+      margin-top: 0.4rem;
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+
+    /* Nav Tabs */
+    .tabs {
+      display: flex;
+      gap: 0.6rem;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 0.8rem;
+      margin-bottom: 2rem;
+      overflow-x: auto;
+    }
+    .tab-btn {
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--text-muted);
+      font-family: var(--font);
+      font-size: 0.95rem;
+      font-weight: 600;
+      padding: 0.6rem 1.2rem;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      white-space: nowrap;
+    }
+    .tab-btn:hover {
+      color: var(--text);
+      background: rgba(255, 255, 255, 0.04);
+    }
+    .tab-btn.active {
+      background: rgba(99, 102, 241, 0.15);
+      border-color: rgba(99, 102, 241, 0.4);
+      color: #ffffff;
+      box-shadow: 0 0 15px rgba(99, 102, 241, 0.2);
+    }
+
+    /* Tab Panes */
+    .tab-pane {
+      display: none;
+      animation: fadeIn 0.3s ease-out;
+    }
+    .tab-pane.active {
+      display: block;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Card Panels */
+    .glass-panel {
+      background: var(--bg-card);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    }
+    .panel-title {
+      font-size: 1.3rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+    .panel-desc {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      margin-bottom: 1.5rem;
+    }
+
+    /* Forms & Inputs */
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.2rem;
+    }
+    .form-group {
+      margin-bottom: 1.2rem;
+    }
+    label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 0.4rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    input, select, textarea {
+      width: 100%;
+      background: rgba(10, 15, 26, 0.7);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 0.75rem 1rem;
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 0.95rem;
+      transition: all 0.2s;
+    }
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25);
+    }
+
+    /* Buttons */
+    .btn {
+      background: var(--primary-gradient);
+      color: #fff;
+      font-family: var(--font);
+      font-weight: 600;
+      font-size: 0.95rem;
+      padding: 0.75rem 1.6rem;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+    }
+    .btn:hover {
+      opacity: 0.92;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(99, 102, 241, 0.45);
+    }
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--border);
+      box-shadow: none;
+    }
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.12);
+      transform: translateY(-2px);
+    }
+    .btn-success {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+    }
+
+    /* Course Cards Grid */
+    .courses-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 1.5rem;
+      margin-top: 1.5rem;
+    }
+    .course-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.5rem;
+      transition: all 0.3s;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+    }
+    .course-card:hover {
+      border-color: rgba(99, 102, 241, 0.4);
+      transform: translateY(-4px);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
+    }
+    .course-badge {
+      display: inline-block;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--accent);
+      background: rgba(6, 182, 212, 0.15);
+      border: 1px solid rgba(6, 182, 212, 0.3);
+      padding: 0.2rem 0.6rem;
+      border-radius: 6px;
+      margin-bottom: 0.8rem;
+    }
+    .course-title {
+      font-size: 1.2rem;
+      font-weight: 700;
+      margin-bottom: 0.6rem;
+    }
+    .course-desc {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      line-height: 1.5;
+      margin-bottom: 1.2rem;
+      flex-grow: 1;
+    }
+    .course-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 1rem;
+      border-top: 1px solid var(--border);
+    }
+    .course-price {
+      font-size: 1.35rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #10b981, #06b6d4);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    /* Response Console */
+    .console-box {
+      background: #050811;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.2rem;
+      margin-top: 1.5rem;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      max-height: 280px;
+      overflow-y: auto;
+      color: #38bdf8;
+      position: relative;
+    }
+    .console-box pre {
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+    .console-tag {
+      position: absolute;
+      top: 0.5rem;
+      right: 0.8rem;
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+
+    /* Tables */
+    .custom-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+    }
+    .custom-table th, .custom-table td {
+      padding: 0.8rem 1rem;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+    .custom-table th {
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .custom-table tr:hover td {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      header { flex-direction: column; gap: 1rem; align-items: flex-start; }
+      .container { padding: 0 1rem; }
+      .form-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Navigation -->
+  <header>
+    <div class="logo-group">
+      <div class="logo-badge">⚡</div>
+      <div>
+        <div class="logo-title">Learnify Microservices</div>
+        <div style="font-size: 0.75rem; color: var(--text-muted);">Enterprise Cloud Gateway Mesh</div>
+      </div>
+    </div>
+
+    <div style="display: flex; gap: 1rem; align-items: center;">
+      <div class="status-pill">
+        <span class="status-dot"></span>
+        <span>Gateway Online</span>
+      </div>
+      <div class="user-pill" id="userPill">
+        <span>👤</span>
+        <span id="userStatusText">Guest</span>
+        <span class="role-badge" id="userRoleBadge" style="display: none;"></span>
+      </div>
+    </div>
+  </header>
+
+  <div class="container">
+
+    <!-- Active Cluster Overview -->
+    <div class="services-bar">
+      <div class="service-card">
+        <div class="service-name">API Gateway</div>
+        <div class="service-port">:8080 (Primary)</div>
+        <div class="service-status">🟢 Route Active</div>
+      </div>
+      <div class="service-card">
+        <div class="service-name">User Service</div>
+        <div class="service-port">:8081 (Auth/JWT)</div>
+        <div class="service-status">🟢 Route Active</div>
+      </div>
+      <div class="service-card">
+        <div class="service-name">Category Service</div>
+        <div class="service-port">:8082 (Categories)</div>
+        <div class="service-status">🟢 Route Active</div>
+      </div>
+      <div class="service-card">
+        <div class="service-name">Course Service</div>
+        <div class="service-port">:8084 (Courses)</div>
+        <div class="service-status">🟢 Route Active</div>
+      </div>
+      <div class="service-card">
+        <div class="service-name">Purchase Service</div>
+        <div class="service-port">:8085 (Payments)</div>
+        <div class="service-status">🟢 Route Active</div>
+      </div>
+      <div class="service-card">
+        <div class="service-name">TiDB Cloud MySQL</div>
+        <div class="service-port">:4000 (Database)</div>
+        <div class="service-status">🟢 Connected</div>
+      </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('coursesTab')">📚 Courses</button>
+      <button class="tab-btn" onclick="switchTab('authTab')">🔐 Auth & Users</button>
+      <button class="tab-btn" onclick="switchTab('categoriesTab')">🏷️ Categories</button>
+      <button class="tab-btn" onclick="switchTab('purchasesTab')">💳 Payments & Orders</button>
+      <button class="tab-btn" onclick="switchTab('terminalTab')">🧪 Live API Console</button>
+    </div>
+
+    <!-- TAB 1: COURSES -->
+    <div id="coursesTab" class="tab-pane active">
+      <div class="glass-panel">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+          <div>
+            <h2 class="panel-title">📚 Course Catalog</h2>
+            <p class="panel-desc">Browse available courses or publish new content (Instructors / Admin).</p>
+          </div>
+          <button class="btn btn-secondary" onclick="fetchCourses()">🔄 Refresh Courses</button>
+        </div>
+
+        <!-- Add Course Form (Collapsible/Inline) -->
+        <div style="margin-top: 1rem; padding: 1.5rem; background: rgba(0,0,0,0.25); border-radius: 12px; border: 1px solid var(--border);">
+          <h3 style="font-size: 1rem; margin-bottom: 1rem; color: var(--accent);">➕ Create New Course (Requires Mentor/Admin Login)</h3>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Course Title</label>
+              <input type="text" id="courseTitle" placeholder="e.g. Fullstack Spring Boot & Microservices">
+            </div>
+            <div class="form-group">
+              <label>Price ($ USD)</label>
+              <input type="number" id="coursePrice" step="0.01" value="49.99">
+            </div>
+            <div class="form-group">
+              <label>Level</label>
+              <select id="courseLevel">
+                <option value="BEGINNER">Beginner</option>
+                <option value="INTERMEDIATE">Intermediate</option>
+                <option value="ADVANCED">Advanced</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Category ID</label>
+              <input type="number" id="courseCategory" value="1">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Description</label>
+            <textarea id="courseDesc" rows="2" placeholder="Course syllabus and what students will learn..."></textarea>
+          </div>
+          <button class="btn" onclick="createCourse()">Publish Course</button>
+        </div>
+
+        <div class="courses-grid" id="coursesGrid">
+          <!-- Dynamic courses inserted here -->
+          <div style="grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 2rem;">
+            Click "Refresh Courses" to load courses from Course Service!
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: AUTH & USERS -->
+    <div id="authTab" class="tab-pane">
+      <div class="glass-panel">
+        <h2 class="panel-title">🔐 Authentication Studio</h2>
+        <p class="panel-desc">Register new users and authenticate to receive a cryptographically signed JWT token.</p>
+
+        <div class="form-grid">
+          <!-- Register Card -->
+          <div style="background: rgba(0,0,0,0.2); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border);">
+            <h3 style="margin-bottom: 1rem; color: var(--primary);">📝 Register Account</h3>
+            <div class="form-group">
+              <label>Full Name</label>
+              <input type="text" id="regName" placeholder="e.g. John Doe">
+            </div>
+            <div class="form-group">
+              <label>Email</label>
+              <input type="email" id="regEmail" placeholder="john@example.com">
+            </div>
+            <div class="form-group">
+              <label>Password</label>
+              <input type="password" id="regPass" placeholder="Password@123">
+            </div>
+            <div class="form-group">
+              <label>Role</label>
+              <select id="regRole">
+                <option value="STUDENT">STUDENT</option>
+                <option value="MENTOR">MENTOR (Can create courses)</option>
+                <option value="ADMIN">ADMIN (Full permissions)</option>
+              </select>
+            </div>
+            <button class="btn" onclick="registerUser()">Register User</button>
+          </div>
+
+          <!-- Sign In Card -->
+          <div style="background: rgba(0,0,0,0.2); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border);">
+            <h3 style="margin-bottom: 1rem; color: var(--accent);">🔑 Sign In</h3>
+            <div class="form-group">
+              <label>Email</label>
+              <input type="email" id="loginEmail" placeholder="admin@example.com">
+            </div>
+            <div class="form-group">
+              <label>Password</label>
+              <input type="password" id="loginPass" placeholder="Password@123">
+            </div>
+            <button class="btn btn-success" onclick="loginUser()">Sign In & Get Token</button>
+
+            <div style="margin-top: 1.5rem; padding: 1rem; background: rgba(0,0,0,0.4); border-radius: 8px;">
+              <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.4rem;">ACTIVE JWT TOKEN:</div>
+              <div id="tokenDisplay" style="font-family: var(--font-mono); font-size: 0.75rem; word-break: break-all; color: #a7f3d0;">
+                (No token stored - Please Sign In)
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: CATEGORIES -->
+    <div id="categoriesTab" class="tab-pane">
+      <div class="glass-panel">
+        <h2 class="panel-title">🏷️ Category Management</h2>
+        <p class="panel-desc">Manage course classification tags (Admin restricted creation).</p>
+
+        <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 1.5rem;">
+          <div style="background: rgba(0,0,0,0.2); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border);">
+            <h3 style="margin-bottom: 1rem; color: var(--primary);">➕ Add Category</h3>
+            <div class="form-group">
+              <label>Category Name</label>
+              <input type="text" id="catName" placeholder="e.g. Cloud Computing">
+            </div>
+            <div class="form-group">
+              <label>Description</label>
+              <textarea id="catDesc" rows="3" placeholder="Category summary..."></textarea>
+            </div>
+            <button class="btn" onclick="createCategory()">Create Category</button>
+          </div>
+
+          <div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+              <h3>Existing Categories</h3>
+              <button class="btn btn-secondary" onclick="fetchCategories()">🔄 Refresh</button>
+            </div>
+            <table class="custom-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Name</th>
+                  <th>Description</th>
+                </tr>
+              </thead>
+              <tbody id="categoryTableBody">
+                <tr><td colspan="3" style="text-align: center; color: var(--text-muted);">Click Refresh to load categories</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 4: PAYMENTS & ORDERS -->
+    <div id="purchasesTab" class="tab-pane">
+      <div class="glass-panel">
+        <h2 class="panel-title">💳 Payments & Order Checkout</h2>
+        <p class="panel-desc">Simulate live e-commerce checkouts and test the mock payment verification flow.</p>
+
+        <div class="form-grid">
+          <!-- Checkout Box -->
+          <div style="background: rgba(0,0,0,0.2); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border);">
+            <h3 style="margin-bottom: 1rem; color: var(--accent);">🛍️ 1. Initiate Checkout</h3>
+            <div class="form-group">
+              <label>Course ID</label>
+              <input type="number" id="payCourseId" value="1">
+            </div>
+            <div class="form-group">
+              <label>Amount ($)</label>
+              <input type="number" id="payAmount" value="49.99">
+            </div>
+            <div class="form-group">
+              <label>Payment Gateway</label>
+              <select id="payMethod">
+                <option value="DUMMY_GATEWAY">Learnify Sandbox Gateway (Instant)</option>
+                <option value="CREDIT_CARD">Credit / Debit Card</option>
+                <option value="UPI">UPI / Net Banking</option>
+              </select>
+            </div>
+            <button class="btn" onclick="checkoutOrder()">Initiate Checkout</button>
+          </div>
+
+          <!-- Verify Box -->
+          <div style="background: rgba(0,0,0,0.2); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border);">
+            <h3 style="margin-bottom: 1rem; color: #10b981;">✅ 2. Verify Payment</h3>
+            <div class="form-group">
+              <label>Order ID</label>
+              <input type="number" id="verifyOrderId" placeholder="Returned from checkout">
+            </div>
+            <div class="form-group">
+              <label>Transaction ID</label>
+              <input type="text" id="verifyTxnId" placeholder="e.g. TXN_MOCK_XXXXX">
+            </div>
+            <div class="form-group">
+              <label>Simulate Result</label>
+              <select id="verifySimulate">
+                <option value="SUCCESS">SUCCESS (Approve & Unlock Course)</option>
+                <option value="FAILED">FAILED (Simulate Bank Decline)</option>
+              </select>
+            </div>
+            <button class="btn btn-success" onclick="verifyPayment()">Verify & Complete Payment</button>
+          </div>
+        </div>
+
+        <div style="margin-top: 2rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <h3>My Orders & Purchases</h3>
+            <button class="btn btn-secondary" onclick="fetchMyPurchases()">🔄 Load My Orders</button>
+          </div>
+          <table class="custom-table" style="margin-top: 1rem;">
+            <thead>
+              <tr>
+                <th>Order #</th>
+                <th>Course ID</th>
+                <th>Amount</th>
+                <th>Transaction Token</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="ordersTableBody">
+              <tr><td colspan="5" style="text-align: center; color: var(--text-muted);">Sign in and click 'Load My Orders'</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 5: TERMINAL / CONSOLE -->
+    <div id="terminalTab" class="tab-pane">
+      <div class="glass-panel">
+        <h2 class="panel-title">🧪 Live API Console & Inspector</h2>
+        <p class="panel-desc">Real-time HTTP request & response inspector across all routed microservices.</p>
+
+        <div class="console-box" id="globalConsole">
+          <div class="console-tag">Live Log</div>
+          <pre id="consoleContent">// Ready. Trigger any action above to inspect live HTTP traffic...</pre>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    let activeToken = localStorage.getItem('learnify_token') || '';
+    let currentUser = null;
+
+    if (activeToken) {
+      decodeAndSetUser(activeToken);
+    }
+
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+      event.target.classList.add('active');
+      document.getElementById(tabId).classList.add('active');
+    }
+
+    function logToConsole(title, data) {
+      const el = document.getElementById('consoleContent');
+      const time = new Date().toLocaleTimeString();
+      const output = `[${time}] >>> ${title}:\n` + JSON.stringify(data, null, 2) + "\n\n" + el.innerText;
+      el.innerText = output.substring(0, 3000);
+    }
+
+    function decodeAndSetUser(token) {
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        currentUser = payload;
+        document.getElementById('userStatusText').innerText = payload.sub || 'User';
+        const badge = document.getElementById('userRoleBadge');
+        badge.innerText = payload.role || 'USER';
+        badge.style.display = 'inline-block';
+        document.getElementById('tokenDisplay').innerText = token.substring(0, 45) + '...';
+      } catch (e) {
+        document.getElementById('userStatusText').innerText = 'Authenticated';
+      }
+    }
+
+    // --- 1. COURSES API ---
+    async function fetchCourses() {
+      try {
+        const res = await fetch('/courses');
+        const data = await res.json();
+        logToConsole("GET /courses", data);
+
+        const grid = document.getElementById('coursesGrid');
+        if (!Array.isArray(data) || data.length === 0) {
+          grid.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 2rem;">No courses found. Be the first to create one!</div>';
+          return;
+        }
+
+        grid.innerHTML = data.map(c => `
+          <div class="course-card">
+            <div>
+              <span class="course-badge">${c.level || 'BEGINNER'}</span>
+              <div class="course-title">${c.title}</div>
+              <div class="course-desc">${c.description || 'Comprehensive industry curriculum.'}</div>
+            </div>
+            <div class="course-footer">
+              <div class="course-price">$${c.price}</div>
+              <button class="btn" style="padding: 0.5rem 1rem; font-size: 0.85rem;" onclick="quickBuy(${c.id}, ${c.price})">⚡ Enroll Now</button>
+            </div>
+          </div>
+        `).join('');
+      } catch (err) {
+        logToConsole("Error fetching courses", err.message);
+      }
+    }
+
+    async function createCourse() {
+      if (!activeToken) return alert("Please Sign In first to create a course!");
+      const body = {
+        title: document.getElementById('courseTitle').value,
+        price: parseFloat(document.getElementById('coursePrice').value),
+        level: document.getElementById('courseLevel').value,
+        categoryId: parseInt(document.getElementById('courseCategory').value),
+        description: document.getElementById('courseDesc').value
+      };
+
+      const res = await fetch('/courses', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + activeToken },
+        body: JSON.stringify(body)
+      });
+      const data = await res.json();
+      logToConsole("POST /courses", data);
+      if (res.ok) {
+        alert("Course published successfully!");
+        fetchCourses();
+      } else {
+        alert("Failed to create course: " + (data.error || JSON.stringify(data)));
+      }
+    }
+
+    function quickBuy(courseId, price) {
+      switchTab('purchasesTab');
+      document.querySelectorAll('.tab-btn')[3].classList.add('active');
+      document.getElementById('payCourseId').value = courseId;
+      document.getElementById('payAmount').value = price;
+    }
+
+    // --- 2. AUTH API ---
+    async function registerUser() {
+      const body = {
+        name: document.getElementById('regName').value,
+        email: document.getElementById('regEmail').value,
+        password: document.getElementById('regPass').value,
+        role: document.getElementById('regRole').value
+      };
+
+      const res = await fetch('/auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      const data = await res.json();
+      logToConsole("POST /auth (Register)", data);
+      alert(res.ok ? "Registration successful! You can now Sign In." : "Registration failed: " + JSON.stringify(data));
+    }
+
+    async function loginUser() {
+      const body = {
+        email: document.getElementById('loginEmail').value,
+        password: document.getElementById('loginPass').value
+      };
+
+      const res = await fetch('/auth/signin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      const data = await res.json();
+      logToConsole("POST /auth/signin", data);
+
+      if (res.ok && data.token) {
+        activeToken = data.token;
+        localStorage.setItem('learnify_token', activeToken);
+        decodeAndSetUser(activeToken);
+        alert("Sign In successful! JWT token stored.");
+      } else {
+        alert("Sign in failed: " + (data.error || "Invalid credentials"));
+      }
+    }
+
+    // --- 3. CATEGORIES API ---
+    async function fetchCategories() {
+      const res = await fetch('/categories');
+      const data = await res.json();
+      logToConsole("GET /categories", data);
+      const tbody = document.getElementById('categoryTableBody');
+      if (Array.isArray(data) && data.length > 0) {
+        tbody.innerHTML = data.map(c => `
+          <tr>
+            <td>#${c.id}</td>
+            <td><strong>${c.name}</strong></td>
+            <td>${c.description || '-'}</td>
+          </tr>
+        `).join('');
+      } else {
+        tbody.innerHTML = '<tr><td colspan="3" style="text-align: center;">No categories found.</td></tr>';
+      }
+    }
+
+    async function createCategory() {
+      if (!activeToken) return alert("Sign in as ADMIN to create a category!");
+      const body = {
+        name: document.getElementById('catName').value,
+        description: document.getElementById('catDesc').value
+      };
+      const res = await fetch('/categories', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + activeToken },
+        body: JSON.stringify(body)
+      });
+      const data = await res.json();
+      logToConsole("POST /categories", data);
+      if (res.ok) {
+        alert("Category created!");
+        fetchCategories();
+      } else {
+        alert("Error: " + (data.error || JSON.stringify(data)));
+      }
+    }
+
+    // --- 4. PURCHASES API ---
+    async function checkoutOrder() {
+      if (!activeToken) return alert("Please Sign In first to checkout!");
+      const body = {
+        courseId: parseInt(document.getElementById('payCourseId').value),
+        amount: parseFloat(document.getElementById('payAmount').value),
+        paymentMethod: document.getElementById('payMethod').value,
+        currency: 'USD'
+      };
+
+      const res = await fetch('/purchases/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + activeToken },
+        body: JSON.stringify(body)
+      });
+      const data = await res.json();
+      logToConsole("POST /purchases/checkout", data);
+
+      if (res.ok) {
+        document.getElementById('verifyOrderId').value = data.id;
+        document.getElementById('verifyTxnId').value = data.transactionId;
+        alert("Checkout initiated! Transaction token generated: " + data.transactionId);
+      } else {
+        alert("Checkout failed: " + (data.error || JSON.stringify(data)));
+      }
+    }
+
+    async function verifyPayment() {
+      if (!activeToken) return alert("Please Sign In first!");
+      const body = {
+        orderId: parseInt(document.getElementById('verifyOrderId').value),
+        transactionId: document.getElementById('verifyTxnId').value,
+        simulateStatus: document.getElementById('verifySimulate').value
+      };
+
+      const res = await fetch('/purchases/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + activeToken },
+        body: JSON.stringify(body)
+      });
+      const data = await res.json();
+      logToConsole("POST /purchases/verify", data);
+
+      if (res.ok) {
+        alert("Payment Verified! Course access granted.");
+        fetchMyPurchases();
+      } else {
+        alert("Payment Verification Failed: " + (data.error || JSON.stringify(data)));
+      }
+    }
+
+    async function fetchMyPurchases() {
+      if (!activeToken) return alert("Sign In first to view your orders!");
+      const res = await fetch('/purchases/my-purchases', {
+        headers: { 'Authorization': 'Bearer ' + activeToken }
+      });
+      const data = await res.json();
+      logToConsole("GET /purchases/my-purchases", data);
+      const tbody = document.getElementById('ordersTableBody');
+      if (Array.isArray(data) && data.length > 0) {
+        tbody.innerHTML = data.map(o => `
+          <tr>
+            <td>#${o.id}</td>
+            <td>Course #${o.courseId}</td>
+            <td><strong>$${o.amount} ${o.currency}</strong></td>
+            <td><code>${o.transactionId}</code></td>
+            <td><span style="color: ${o.status === 'COMPLETED' ? '#10b981' : '#f59e0b'}; font-weight: 700;">${o.status}</span></td>
+          </tr>
+        `).join('');
+      } else {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">No orders found.</td></tr>';
+      }
+    }
+
+    // Auto-fetch initial courses
+    window.addEventListener('load', () => {
+      fetchCourses();
+    });
+  </script>
+</body>
+</html>

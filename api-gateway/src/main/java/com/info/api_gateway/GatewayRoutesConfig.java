@@ -15,6 +15,9 @@ public class GatewayRoutesConfig {
     @Value("${CATEGORY_SERVICE_URL:}")
     private String categoryServiceUrl;
 
+    @Value("${COURSE_SERVICE_URL:}")
+    private String courseServiceUrl;
+
     @Value("${PURCHASE_SERVICE_URL:}")
     private String purchaseServiceUrl;
 
@@ -28,6 +31,8 @@ public class GatewayRoutesConfig {
                         .uri(formatUri(userServiceUrl, 8081, "USER-SERVICE")))
                 .route("category-service", r -> r.path("/categories/**")
                         .uri(formatUri(categoryServiceUrl, 8082, "CATEGORY-SERVICE")))
+                .route("course-service", r -> r.path("/courses/**")
+                        .uri(formatUri(courseServiceUrl, 8084, "COURSE-SERVICE")))
                 .route("purchase-service", r -> r.path("/purchases/**")
                         .uri(formatUri(purchaseServiceUrl, 8085, "PURCHASE-SERVICE")))
                 .build();

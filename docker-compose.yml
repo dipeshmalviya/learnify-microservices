@@ -112,6 +112,31 @@ services:
       - learnify-network
 
   # ==========================================================
+  # Course Service (Courses & Curriculum)
+  # ==========================================================
+  course-service:
+    build:
+      context: ./course-service
+      dockerfile: Dockerfile
+    container_name: learnify-course-service
+    restart: unless-stopped
+    ports:
+      - "8084:8084"
+    environment:
+      - PORT=8084
+      - DB_URL=jdbc:mysql://mysql:3306/newcoursemicroservicedb?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
+      - DB_USERNAME=${DB_USERNAME:-root}
+      - DB_PASSWORD=${DB_PASSWORD:-Root@123}
+      - EUREKA_SERVER_URL=http://server-registry:8761/eureka
+    depends_on:
+      mysql:
+        condition: service_healthy
+      server-registry:
+        condition: service_started
+    networks:
+      - learnify-network
+
+  # ==========================================================
   # Purchase Service (Checkout, Payment Gateway, Orders)
   # ==========================================================
   purchase-service:

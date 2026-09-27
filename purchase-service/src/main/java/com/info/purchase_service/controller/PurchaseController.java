@@ -19,16 +19,24 @@ public class PurchaseController {
     @Autowired
     private PurchaseService service;
 
+    private Long parseUserId(String userId) {
+        if (userId == null || userId.isBlank()) {
+            throw new BadRequestException("Authentication required: missing X-USER-ID header");
+        }
+        try {
+            return Long.parseLong(userId.trim());
+        } catch (NumberFormatException e) {
+            long hash = Math.abs((long) userId.trim().hashCode());
+            return hash == 0 ? 1L : hash;
+        }
+    }
+
     @PostMapping("/checkout")
     public ResponseEntity<PurchaseResponseDTO> checkout(
             @RequestHeader(value = "X-USER-ID", required = false) String userId,
             @RequestBody CheckoutRequestDTO request) {
 
-        if (userId == null || userId.isBlank()) {
-            throw new BadRequestException("Authentication required: missing X-USER-ID header");
-        }
-
-        PurchaseResponseDTO response = service.checkout(request, Long.valueOf(userId));
+        PurchaseResponseDTO response = service.checkout(request, parseUserId(userId));
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
@@ -37,11 +45,7 @@ public class PurchaseController {
             @RequestHeader(value = "X-USER-ID", required = false) String userId,
             @RequestBody PaymentVerificationRequestDTO request) {
 
-        if (userId == null || userId.isBlank()) {
-            throw new BadRequestException("Authentication required: missing X-USER-ID header");
-        }
-
-        PurchaseResponseDTO response = service.verifyPayment(request, Long.valueOf(userId));
+        PurchaseResponseDTO response = service.verifyPayment(request, parseUserId(userId));
         return ResponseEntity.ok(response);
     }
 
@@ -49,11 +53,7 @@ public class PurchaseController {
     public ResponseEntity<List<PurchaseResponseDTO>> getMyPurchases(
             @RequestHeader(value = "X-USER-ID", required = false) String userId) {
 
-        if (userId == null || userId.isBlank()) {
-            throw new BadRequestException("Authentication required: missing X-USER-ID header");
-        }
-
-        return ResponseEntity.ok(service.getMyPurchases(Long.valueOf(userId)));
+        return ResponseEntity.ok(service.getMyPurchases(parseUserId(userId)));
     }
 
     @GetMapping("/{id}")
@@ -62,11 +62,7 @@ public class PurchaseController {
             @RequestHeader(value = "X-USER-ID", required = false) String userId,
             @RequestHeader(value = "X-ROLE", required = false) String role) {
 
-        if (userId == null || userId.isBlank()) {
-            throw new BadRequestException("Authentication required: missing X-USER-ID header");
-        }
-
-        return ResponseEntity.ok(service.getById(id, Long.valueOf(userId), role));
+        return ResponseEntity.ok(service.getById(id, parseUserId(userId), role));
     }
 
     @GetMapping("/admin/all")

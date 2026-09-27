@@ -1,5 +1,18 @@
 services:
   # ==========================================================
+  # Server Registry (Eureka Discovery Server)
+  # ==========================================================
+  - type: web
+    name: learnify-server-registry
+    runtime: docker
+    dockerfilePath: ./server-registry/Dockerfile
+    dockerContext: ./server-registry
+    plan: free
+    envVars:
+      - key: PORT
+        value: 8761
+
+  # ==========================================================
   # User Service (Auth, Registration, JWT)
   # ==========================================================
   - type: web
@@ -44,6 +57,27 @@ services:
         sync: false
 
   # ==========================================================
+  # Course Service (Course Catalog & Management)
+  # ==========================================================
+  - type: web
+    name: learnify-course-service
+    runtime: docker
+    dockerfilePath: ./course-service/Dockerfile
+    dockerContext: ./course-service
+    plan: free
+    envVars:
+      - key: PORT
+        value: 8084
+      - key: EUREKA_ENABLED
+        value: false
+      - key: DB_URL
+        sync: false
+      - key: DB_USERNAME
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+
+  # ==========================================================
   # Purchase Service (Checkout & Dummy Payment Gateway)
   # ==========================================================
   - type: web
@@ -65,7 +99,7 @@ services:
         sync: false
 
   # ==========================================================
-  # API Gateway (Unified Entry Point & Routing)
+  # API Gateway (Unified Entry Point & Interactive Dashboard)
   # ==========================================================
   - type: web
     name: learnify-api-gateway
@@ -87,6 +121,11 @@ services:
         fromService:
           type: web
           name: learnify-category-service
+          property: host
+      - key: COURSE_SERVICE_URL
+        fromService:
+          type: web
+          name: learnify-course-service
           property: host
       - key: PURCHASE_SERVICE_URL
         fromService:
